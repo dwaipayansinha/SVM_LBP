@@ -133,9 +133,9 @@ int Box::test()
 				cv::putText(frame_stream, output_expression, roi.tl(), CV_FONT_HERSHEY_TRIPLEX, 0.7, Scalar(0, 0, 255), 1);
 			}
 
-			imshow("image", frame_stream);
+			/*cv::imshow("image", frame_stream);
 			char c = (char)waitKey(33);
-			if (c == 27) break;
+			if (c == 27) break;*/
 		}
 	}
 
@@ -166,11 +166,18 @@ int Box::prediction(const cv::Mat &testingData)
 	{
 
 		float p;
-		Ptr<SVM> svm = Algorithm::load<SVM>("SVM_LBP.xml");
-		svm->setType(SVM::C_SVC);
-		svm->setKernel(SVM::LINEAR);
-		svm->setTermCriteria(TermCriteria(TermCriteria::MAX_ITER, 100, 1e-6));
-		p = svm->predict(testingData);
+		CvSVMParams params;
+		params.svm_type = CvSVM::C_SVC;
+		params.kernel_type = CvSVM::LINEAR;
+		params.term_crit = cvTermCriteria(CV_TERMCRIT_ITER, 100, 1e-6);
+		CvSVM SVM;
+
+
+		for (int j = 0; j < 6; j++)
+		{
+			SVM.load("SVM_LBP.xml");
+			p = SVM.predict(testingData);
+		}
 
 		return(p);
 	}

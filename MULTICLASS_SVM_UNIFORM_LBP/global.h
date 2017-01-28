@@ -8,12 +8,13 @@
 #include <stdlib.h>
 #include <vector>
 #include <opencv2/ml.hpp>
+#include <opencv2/highgui.hpp>
 
 
 
 using namespace std;
 using namespace cv;
-using namespace cv::ml;
+//using namespace cv::ml;
 
 //extern int R = 1;
 ////LBP Points

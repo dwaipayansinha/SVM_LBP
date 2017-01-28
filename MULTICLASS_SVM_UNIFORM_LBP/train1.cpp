@@ -68,10 +68,12 @@ int Box::train1()
 	cout << "Image path has been set!" << endl;
 
 	// Set SVM parameters
-	Ptr<SVM> svm = SVM::create();
-	svm->setType(SVM::C_SVC);
-	svm->setKernel(SVM::LINEAR);
-	svm->setTermCriteria(TermCriteria(TermCriteria::MAX_ITER, 100, 1e-6));
+	CvSVMParams params;
+	params.svm_type = CvSVM::C_SVC;
+	params.kernel_type = CvSVM::LINEAR;
+	params.term_crit = cvTermCriteria(CV_TERMCRIT_ITER, 100, 1e-6);
+
+	CvSVM SVM;
 	cout << "SVM has been initialized!" << endl;
 
 	for (int i = 0; i < 6; i++)
@@ -79,9 +81,9 @@ int Box::train1()
 		B.labelling(i, trainingData, trainingLabel, data1[i], i);
 	}
 
-	trainingLabel.convertTo(trainingLabel, CV_32S);
-	svm->train(trainingData, ROW_SAMPLE, trainingLabel);
-	svm->save("SVM_LBP.xml");
+	//trainingLabel.convertTo(trainingLabel, CV_32S);
+	SVM.train(trainingData, trainingLabel, Mat(), Mat(), params);
+	SVM.save("SVM_LBP.xml");
 	cout << "SVM has beed trained and stored" << endl;
 
 	system("pause");
