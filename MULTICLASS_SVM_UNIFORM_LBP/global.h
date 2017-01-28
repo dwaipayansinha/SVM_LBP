@@ -14,7 +14,7 @@
 
 using namespace std;
 using namespace cv;
-//using namespace cv::ml;
+using namespace cv::ml;
 
 //extern int R = 1;
 ////LBP Points

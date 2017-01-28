@@ -1,5 +1,8 @@
 #include "global.h"
 #include <string.h>
+#include <opencv2/ml.hpp>
+
+using namespace cv::ml;
 
 #define ELEM(start,step,xpos,ypos) (*((uchar*)(start+step*(ypos)+(xpos)*sizeof(uchar))))
 
@@ -33,32 +36,44 @@ int Box::train1()
 {
 	cout << "Training is going on! Please Wait!" << endl;
 	std::vector<std::string> names = { "Anger", "Disgust", "Fear", "Joy", "Sad", "Surprise" };
-	std::vector<std::string> path{ "../CK6/Anger/", "../CK6/Disgust/", "../CK6/Fear/", "../CK6/Joy/", "../CK6/Sad", "../CK6/Surprise" };
+	std::vector<std::string> path{ "../CK2/Anger/", "../CK2/Disgust/", "../CK2/Fear/", "../CK2/Joy/", "../CK2/Sad", "../CK2/Surprise" };
 	trainingData = NULL;
 	trainingLabel = NULL;
 
-	// Face Cascade Initialization
-	face_cascade_name = "../haarcascade_frontalface_alt.xml";
-	if (!face_cascade.load(face_cascade_name))
-	{
-		throw std::invalid_argument("Error Loading haarcascade_frontalface_alt.xml");
-	}
-	Mat image;
-	//
+	//// Face Cascade Initialization
+	//face_cascade_name = "D:/opencv/data/haarcascades/haarcascade_frontalface_alt.xml";
+	//if (!face_cascade.load(face_cascade_name))
+	//{
+	//	throw std::invalid_argument("Error Loading haarcascade_frontalface_alt.xml");
+	//}
+	//Mat image;
+	////
 
 	// read each file in the folder
 	for (int i = 0; i < 6; i++)
 	{
 		cv::glob(path[i], fn, true);
+
 		int count = 0;
 		for (int k = 0; k < fn.size(); k++)
 		{
 			cv::Mat im = cv::imread(fn[k], CV_32FC1);
-			if (im.empty())
-			{
-				cout << "empty" << endl;
-				continue; //only proceed if successful
-			}
+
+			////Face Detection
+			//char sF[100];
+			//sprintf(sF, "%s%d%s", "image", k, ".png");
+			//string saveFileName(sF);
+			//cv::cvtColor(im, frame_gray, CV_BGR2GRAY);
+			//face_cascade.detectMultiScale(frame_gray, faces, 1.1, 2, 0 | CASCADE_SCALE_IMAGE, Size(30, 30));
+			//Rect roi = faces.at(faces.size() - 1);
+			//image=frame_gray(roi);
+			////imshow("frame",image);
+
+			//imwrite(saveFileName.c_str(),image);
+
+			////
+
+			if (im.empty()) continue; //only proceed if successful
 			data1[i].push_back(im);
 			++count;
 		}
@@ -67,26 +82,25 @@ int Box::train1()
 
 	cout << "Image path has been set!" << endl;
 
-	// Set SVM parameters
-	CvSVMParams params;
-	params.svm_type = CvSVM::C_SVC;
-	params.kernel_type = CvSVM::LINEAR;
-	params.term_crit = cvTermCriteria(CV_TERMCRIT_ITER, 100, 1e-6);
+	Ptr<SVM> svm = SVM::create();
+	svm->setType(SVM::C_SVC);
+	svm->setKernel(SVM::LINEAR);
+	svm->setTermCriteria(TermCriteria(TermCriteria::MAX_ITER, 100, 1e-6));
 
-	CvSVM SVM;
 	cout << "SVM has been initialized!" << endl;
 
 	for (int i = 0; i < 6; i++)
 	{
 		B.labelling(i, trainingData, trainingLabel, data1[i], i);
 	}
+	/*Mat trainingData1(trainingData.rows, trainingData.cols, CV_32FC1, cv::Scalar(0));
+	trainingData.copyTo(trainingData1);*/
 
-	//trainingLabel.convertTo(trainingLabel, CV_32S);
-	SVM.train(trainingData, trainingLabel, Mat(), Mat(), params);
-	SVM.save("SVM_LBP.xml");
+	trainingLabel.convertTo(trainingLabel, CV_32S);
+
+	svm->train(trainingData, ROW_SAMPLE, trainingLabel);
+	svm->save("SVM_LBP.xml");
 	cout << "SVM has beed trained and stored" << endl;
-
-	system("pause");
 	return 0;
 }
 
@@ -105,6 +119,11 @@ int Box::labelling(int i, Mat &trainingData, Mat &trainingLabel, const std::vect
 
 	face_cascade_name = "../haarcascade_frontalface_alt.xml";
 	eyes_cascade_name = "../haarcascade_mcs_eyepair_big.xml";
+
+	/*nose_cascade_name = "D:/opencv/data/haarcascades/nose.xml";
+	mouth_cascade_name = "D:/opencv/data/haarcascades/mouth.xml";*/
+
+
 	Mat trainingDataTemp, trainingDataTemp1;
 
 	try
@@ -118,22 +137,61 @@ int Box::labelling(int i, Mat &trainingData, Mat &trainingLabel, const std::vect
 		{
 			throw std::invalid_argument("Error Loading haarcascade_eye_tree_eyeglasses.xml");
 		}
+		/*if (!nose_cascade.load(nose_cascade_name))
+		{
+		throw std::invalid_argument("Error Loading Nariz.xml");
+		}
+		if (!mouth_cascade.load(mouth_cascade_name))
+		{
+		throw  std::invalid_argument("Error Loading Mouth.xml");
+		}*/
+
 
 		for (int t = 0; t < data_current.size(); t++)
 		{
 			int bins = (P*(P - 1) + 3);
+			//int bins = pow((double)2, (double)P);
 			frame = data_current[t];
 			resize(frame, frame, size1);
 			int size_of_row_blocks = frame.rows / row_blocks;
 			int size_of_col_blocks = frame.cols / col_blocks;
 			int init_x = 0, init_y = 0;
 			Mat block;
-			cv::Mat feature_hist(1, ((row_blocks*col_blocks))*(bins), CV_32FC1, Scalar(0));
+			cv::Mat feature_hist(1, ((row_blocks*col_blocks) + 1)*(bins), CV_32FC1, Scalar(0));
+
+			//imshow("frame", frame);
+			//waitKey(0);
+
+
+
 			eyes_cascade.detectMultiScale(frame, eyes, 1.1, 2, 0 | CASCADE_SCALE_IMAGE, Size(30, 30));
 
 			int prevsize = 0;
 			int size = bins - 1;
+
+			//cout << "I am in loop" << endl;
+
+			cv::Mat eye_temp_hist(1, bins, CV_32FC1, Scalar(0));
 			cv::Mat block_temp_hist(1, bins, CV_32FC1, Scalar(0));
+
+
+
+			for (size_t j = 0; j < eyes.size(); j++)
+			{
+				int kk = eyes.size() - 1;
+				if (kk == eyes.size() - 1)
+				{
+					//rectangle(frame, Point(eyes[j].x, eyes[j].y), Point(eyes[j].x + eyes[j].width, eyes[j].y + eyes[j].height), Scalar(255, 0, 0), 1, 8, 0);
+					Mat eye_temp;
+
+					eye_temp = frame(eyes.at(j));
+
+					eye_temp_hist = getLBPu2Hist(eye_temp, P, R);
+					normalizeHist(eye_temp_hist);
+					eye_temp_hist.colRange(0, size).copyTo(feature_hist.colRange(prevsize, prevsize + size));
+
+				}
+			}
 
 
 			for (int i = 0; i < row_blocks; i++)
@@ -143,11 +201,13 @@ int Box::labelling(int i, Mat &trainingData, Mat &trainingLabel, const std::vect
 				{
 					Rect roi = Rect(init_x, init_y, size_of_row_blocks - 1, size_of_col_blocks - 1);
 					block = frame(roi);
+					/*rectangle(frame, Point(init_x, init_y), Point(init_x + size_of_row_blocks, init_y + size_of_col_blocks), Scalar(255, 0, 0), 1, 8, 0);
+					imshow("frame", frame);
+					waitKey(0);*/
 					block_temp_hist = getLBPu2Hist(block, P, R);
 					normalizeHist(block_temp_hist);
-
-					block_temp_hist.colRange(0, size).copyTo(feature_hist.colRange(prevsize, prevsize + size));
 					prevsize = prevsize + size + 1;
+					block_temp_hist.colRange(0, size).copyTo(feature_hist.colRange(prevsize, prevsize + size));
 
 					init_x = init_x + size_of_col_blocks;
 
@@ -156,6 +216,13 @@ int Box::labelling(int i, Mat &trainingData, Mat &trainingLabel, const std::vect
 				init_y = init_y + size_of_row_blocks;
 			}
 
+
+
+
+
+
+			/*imshow("frame", frame);
+			waitKey(0);*/
 			trainingLabel.push_back(label);
 			trainingData.push_back(feature_hist);
 		}
@@ -166,15 +233,17 @@ int Box::labelling(int i, Mat &trainingData, Mat &trainingLabel, const std::vect
 	{
 		const char* err_msg = e.what();
 		std::cout << "exception caught: " << err_msg << std::endl;
+		getchar();
 	}
 	catch (runtime_error& ex) {
 		cerr << "Runtime Error:\n" << ex.what();
+		getchar();
 	}
 	catch (const std::invalid_argument& e)
 	{
-		cout << e.what() << endl;
+		cout << e.what();
+		getchar();
 	}
-
 	return 0;
 }
 
@@ -183,6 +252,7 @@ int Box::labelling(int i, Mat &trainingData, Mat &trainingLabel, const std::vect
 Mat Box::getLBPu2Hist(cv::Mat &frame, int P, int R)
 {
 	unsigned bins = (unsigned)(P*(P - 1) + 3);
+	//unsigned bins = (unsigned)pow((double)2, (double)P);
 	cv::Mat LBPu2Hist(1, bins, CV_32FC1, Scalar(0));
 	unsigned uniform[] = { 0 ,1 ,2 , 3, 4, 6, 7, 8, 12, 14, 15, 16, 24, 28, 30, 31, 32, 48, 56, 60, 62, 63, 64, 96, 112,120, 124, 126, 127, 128, 129, 131, 135, 143, 159, 191, 192, 193, 195, 199, 207, 223, 224, 225, 227, 231, 239, 240, 241, 243, 247, 248, 249, 251, 252, 253, 254, 255 };
 	cv::Point *nbrTable;
@@ -221,6 +291,8 @@ Mat Box::getLBPu2Hist(cv::Mat &frame, int P, int R)
 			else
 				(*((float*)(LBPu2Hist.data + (x) * sizeof(float))))++;
 
+			//	
+			//(*((float*)(LBPu2Hist.data + V * sizeof(float))))++;
 		}
 	}
 	return LBPu2Hist;
