@@ -133,9 +133,9 @@ int Box::test()
 				cv::putText(frame_stream, output_expression, roi.tl(), CV_FONT_HERSHEY_TRIPLEX, 0.7, Scalar(0, 0, 255), 1);
 			}
 
-			/*cv::imshow("image", frame_stream);
+			cv::imshow("image", frame_stream);
 			char c = (char)waitKey(33);
-			if (c == 27) break;*/
+			if (c == 27) break;
 		}
 	}
 
