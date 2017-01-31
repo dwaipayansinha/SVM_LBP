@@ -16,8 +16,14 @@ int Box::test()
 
 	std::string output_expression;
 
-	std::vector<std::string> names = { "Anger", "Disgust", "Fear", "Joy", "Sad", "Surprise" };
-	std::vector<std::string> path{ "../CK2/Anger/", "../CK2/Disgust/", "../CK2/Fear/", "../CK2/Joy/", "../CK2/Sad", "../CK2/Surprise" };
+	/*std::vector<std::string> names = { "Anger", "Disgust", "Fear", "Joy", "Sad", "Surprise" };
+	std::vector<std::string> path{ "../CK2/Anger/", "../CK2/Disgust/", "../CK2/Fear/", "../CK2/Joy/", "../CK2/Sad", "../CK2/Surprise" };*/
+
+	/*std::vector<std::string> names = { "Anger", "Disgust", "Fear", "Joy", "Sad", "Surprise" };
+	std::vector<std::string> path{ "../CK2F/Anger/", "../CK2F/Disgust/", "../CK2F/Fear/", "../CK2F/Joy/", "../CK2F/Sad", "../CK2F/Surprise" };*/
+
+	std::vector<std::string> names = { "Anger", "Disgust", "Fear", "Joy" };
+	std::vector<std::string> path{ "../CK2/Anger/", "../CK2/Disgust/", "../CK2/Fear/", "../CK2/Joy/" };
 
 	face_cascade_name = "../haarcascade_frontalface_alt.xml";
 	eyes_cascade_name = "../haarcascade_mcs_eyepair_big.xml";
@@ -55,7 +61,7 @@ int Box::test()
 		}
 
 		//Extract images from database
-		for (int i = 0; i < 6; i++)
+		for (int i = 0; i < path.size(); i++)
 		{
 			cv::glob(path[i], fn, true);
 			for (int k = 0; k < fn.size(); k++)
@@ -104,7 +110,7 @@ int Box::test()
 				int y = roi1.y;
 				int h = y + roi1.height;
 				int w = x + roi1.width;
-				rectangle(frame_stream, Point(x, y), Point(w, h), Scalar(255, 0, 255), 2, 8, 0);
+				rectangle(frame_stream, Point(x, y), Point(w, h), Scalar(0, 255, 0), 2, 8, 0);
 				frame = frame_stream_gray(roi1);
 				//
 				resize(frame, frame, size1);
@@ -187,7 +193,7 @@ int Box::test()
 				Rect roi = Rect(30, 50, frame.cols, frame.rows);
 				// cv::putText(frame, output_expression, roi.tl(), CV_FONT_HERSHEY_TRIPLEX, 0.7, Scalar(0, 0, 255), 1);
 				//LIVE STREAM
-				cv::putText(frame_stream, output_expression, roi.tl(), CV_FONT_HERSHEY_TRIPLEX, 0.7, Scalar(0, 0, 255), 1);
+				cv::putText(frame_stream, output_expression, roi.tl(), CV_FONT_HERSHEY_TRIPLEX, 0.7, Scalar(0, 255, 255), 1);
 				//
 				/*imshow("image", frame);
 				waitKey(0);*/

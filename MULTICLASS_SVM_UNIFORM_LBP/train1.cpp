@@ -35,8 +35,12 @@ int row_blocks = 9, col_blocks = 9;
 int Box::train1()
 {
 	cout << "Training is going on! Please Wait!" << endl;
-	std::vector<std::string> names = { "Anger", "Disgust", "Fear", "Joy", "Sad", "Surprise" };
-	std::vector<std::string> path{ "../CK2/Anger/", "../CK2/Disgust/", "../CK2/Fear/", "../CK2/Joy/", "../CK2/Sad", "../CK2/Surprise" };
+	/*std::vector<std::string> names = { "Anger", "Disgust", "Fear", "Joy", "Sad", "Surprise" };
+	std::vector<std::string> path{ "../CK2/Anger/", "../CK2/Disgust/", "../CK2/Fear/", "../CK2/Joy/", "../CK2/Sad", "../CK2/Surprise" };*/
+	/*std::vector<std::string> names = { "Anger", "Disgust", "Fear", "Joy", "Sad", "Surprise" };
+	std::vector<std::string> path{ "../CK2F/Anger/", "../CK2F/Disgust/", "../CK2F/Fear/", "../CK2F/Joy/", "../CK2F/Sad", "../CK2F/Surprise" };*/
+	std::vector<std::string> names = { "Anger", "Disgust", "Fear", "Joy" };
+	std::vector<std::string> path{ "../CK2/Anger/", "../CK2/Disgust/", "../CK2/Fear/", "../CK2/Joy/" };
 	trainingData = NULL;
 	trainingLabel = NULL;
 
@@ -50,7 +54,7 @@ int Box::train1()
 	////
 
 	// read each file in the folder
-	for (int i = 0; i < 6; i++)
+	for (int i = 0; i < path.size(); i++)
 	{
 		cv::glob(path[i], fn, true);
 
@@ -89,7 +93,7 @@ int Box::train1()
 
 	cout << "SVM has been initialized!" << endl;
 
-	for (int i = 0; i < 6; i++)
+	for (int i = 0; i < path.size(); i++)
 	{
 		B.labelling(i, trainingData, trainingLabel, data1[i], i);
 	}
