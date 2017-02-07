@@ -175,7 +175,17 @@ int Box::test()
 				temp_exp_index = prediction(feature_hist);
 				output_expression = names[temp_exp_index];
 
-				cout << output_expression << endl;
+				time_t rawtime;
+				struct tm * timeinfo;
+				char buffer[80];
+
+				time(&rawtime);
+				timeinfo = localtime(&rawtime);
+
+				strftime(buffer, 80, "%d-%m-%Y %I:%M:%S", timeinfo);
+				std::string str(buffer);
+
+				std::cout << str << "  " << output_expression << endl;
 				/*if (temp_exp_index == g)
 				{
 				score = 1;
@@ -239,16 +249,11 @@ int Box::prediction(const cv::Mat &testingData)
 	{
 
 		float p;
-		/*Ptr<SVM> svm = SVM::create();
-		svm->setType(SVM::C_SVC);
-		svm->setKernel(SVM::LINEAR);
-		svm->setTermCriteria(TermCriteria(TermCriteria::MAX_ITER, 100, 1e-6));
-
-		svm->load("SVM_LBP.xml");*/
+		
 		Ptr<SVM> svm = Algorithm::load<SVM>("SVM_LBP.xml");
-		svm->setType(SVM::C_SVC);
-		svm->setKernel(SVM::LINEAR);
-		svm->setTermCriteria(TermCriteria(TermCriteria::MAX_ITER, 100, 1e-6));
+		/*svm->setType(SVM::C_SVC);
+		svm->setKernel(SVM::INTER);
+		svm->setTermCriteria(TermCriteria(TermCriteria::MAX_ITER, 100, 1e-6));*/
 		p = svm->predict(testingData);
 
 		return(p);
