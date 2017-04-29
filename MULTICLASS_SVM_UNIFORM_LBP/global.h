@@ -39,6 +39,8 @@ extern CascadeClassifier face_cascade;
 extern CascadeClassifier eyes_cascade;
 extern CascadeClassifier nose_cascade;
 extern CascadeClassifier mouth_cascade;
+//extern CvSVMParams params;
+extern double gamma, C;
 
 class Box
 {

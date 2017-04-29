@@ -16,19 +16,16 @@ int Box::test()
 
 	std::string output_expression;
 
-	/*std::vector<std::string> names = { "Anger", "Disgust", "Fear", "Joy", "Sad", "Surprise" };
-	std::vector<std::string> path{ "../CK2/Anger/", "../CK2/Disgust/", "../CK2/Fear/", "../CK2/Joy/", "../CK2/Sad", "../CK2/Surprise" };*/
+	/*std::vector<std::string> names = { "Anger", "Disgust", "Fear", "Joy", "Neutral" ,"Sad", "Surprise" };
+	std::vector<std::string> path{ "../CK2/Anger/", "../CK2/Disgust/", "../CK2/Fear/", "../CK2/Joy/", "../CK2/Neutral", "../CK2/Sad", "../CK2/Surprise" };*/
 
-	/*std::vector<std::string> names = { "Anger", "Disgust", "Fear", "Joy", "Sad", "Surprise" };
-	std::vector<std::string> path{ "../CK2F/Anger/", "../CK2F/Disgust/", "../CK2F/Fear/", "../CK2F/Joy/", "../CK2F/Sad", "../CK2F/Surprise" };*/
-
-	std::vector<std::string> names = { "Anger", "Disgust", "Fear", "Joy" };
-	std::vector<std::string> path{ "../CK2/Anger/", "../CK2/Disgust/", "../CK2/Fear/", "../CK2/Joy/" };
+	std::vector<std::string> names = { "Anger", "Disgust", "Fear", "Joy", "Neutral" };
+	std::vector<std::string> path{ "../CK2/Anger/", "../CK2/Disgust/", "../CK2/Fear/", "../CK2/Joy/", "../CK2/Neutral"};
 
 	face_cascade_name = "../haarcascade_frontalface_alt.xml";
-	eyes_cascade_name = "../haarcascade_mcs_eyepair_big.xml";
+	/*eyes_cascade_name = "../haarcascade_mcs_eyepair_big.xml";
 	nose_cascade_name = "../nose.xml";
-	mouth_cascade_name = "../mouth.xml";
+	mouth_cascade_name = "../mouth.xml";*/
 
 	trainingData = NULL;
 	trainingLabel = NULL;
@@ -41,27 +38,16 @@ int Box::test()
 	{
 		if (!face_cascade.load(face_cascade_name))
 		{
-			//cout << "No frontal face model" << endl;
 			throw std::invalid_argument("Error Loading haarcascade_frontalface_alt.xml");
 		}
-		if (!eyes_cascade.load(eyes_cascade_name))
+		/*if (!eyes_cascade.load(eyes_cascade_name))
 		{
-			//cout << "No eyes model" << endl;
-			throw std::invalid_argument("haarcascade_mcs_eyepair_big.xml");
-		}
-		if (!nose_cascade.load(nose_cascade_name))
-		{
-			//cout << "No nose model" << endl;
-			throw std::invalid_argument("Error Loading nose.xml");
-		}
-		if (!mouth_cascade.load(mouth_cascade_name))
-		{
-			//cout << "No mouth model" << endl;
-			throw  std::invalid_argument("Error Loading mouth.xml");
-		}
+		throw std::invalid_argument("haarcascade_mcs_eyepair_big.xml");
+		}*/
+
 
 		//Extract images from database
-		for (int i = 0; i < path.size(); i++)
+		for (int i = 0; i < names.size(); i++)
 		{
 			cv::glob(path[i], fn, true);
 			for (int k = 0; k < fn.size(); k++)
@@ -77,21 +63,28 @@ int Box::test()
 		if (!vcap.isOpened())
 		{
 			throw std::invalid_argument("Error loading camera");
+
 		}
-		int score;
+		vcap.set(CV_CAP_PROP_FPS, 30);
+
+		//cout << "frame per second   " << vcap.get(CV_CAP_PROP_FPS);
+
+
+		/*int score;
 
 		ofstream ptr;
-		ptr.open("score_live.txt", 'w');
+		ptr.open("score_live.txt", 'w');*/
 
-		/*for (int g = 0; g < 6; g++)
-		{
-		for (int t = 0; t < data1[g].size(); t++)*/
+		//for (int g = 0; g < 6; g++)
+		//{
+		//	for (int t = 0; t < data1[g].size(); t++)
 		while (1)
 		{
 			//frame = data1[g][t];
 
 			//LIVE STREAM
 			vcap >> frame_stream;
+
 			if (frame_stream.empty()) //check whether the image is loaded or not
 			{
 				cout << "Error : Image cannot be loaded..!!" << endl;
@@ -110,7 +103,7 @@ int Box::test()
 				int y = roi1.y;
 				int h = y + roi1.height;
 				int w = x + roi1.width;
-				rectangle(frame_stream, Point(x, y), Point(w, h), Scalar(0, 255, 0), 2, 8, 0);
+				rectangle(frame_stream, Point(x, y), Point(w, h), Scalar(255, 0, 255), 2, 8, 0);
 				frame = frame_stream_gray(roi1);
 				//
 				resize(frame, frame, size1);
@@ -120,35 +113,35 @@ int Box::test()
 				Mat block;
 				//int bins = pow((double)2, (double)P);
 				int bins = (P*(P - 1) + 3);
-				cv::Mat feature_hist(1, ((row_blocks*col_blocks + 1))*(bins), CV_32FC1, Scalar(0));
+				cv::Mat feature_hist(1, ((row_blocks*col_blocks))*(bins), CV_32FC1, Scalar(0));
 
-				eyes_cascade.detectMultiScale(frame, eyes, 1.1, 2, 0 | CASCADE_SCALE_IMAGE, Size(30, 30));
+				/*eyes_cascade.detectMultiScale(frame, eyes, 1.1, 2, 0 | CASCADE_SCALE_IMAGE, Size(30, 30));*/
 
 				int prevsize = 0;
 				int size = bins - 1;
 
 				//cout << "I am in loop" << endl;
 
-				cv::Mat eye_temp_hist(1, bins, CV_32FC1, Scalar(0));
+				/*cv::Mat eye_temp_hist(1, bins, CV_32FC1, Scalar(0));*/
 				cv::Mat block_temp_hist(1, bins, CV_32FC1, Scalar(0));
 
 
-				for (size_t j = 0; j < eyes.size(); j++)
-				{
-					int kk = eyes.size() - 1;
-					if (kk == eyes.size() - 1)
-					{
-						//rectangle(frame, Point(eyes[j].x, eyes[j].y), Point(eyes[j].x + eyes[j].width, eyes[j].y + eyes[j].height), Scalar(255, 0, 0), 1, 8, 0);
-						Mat eye_temp;
+				//for (size_t j = 0; j < eyes.size(); j++)
+				//{
+				//	int kk = eyes.size() - 1;
+				//	if (kk == eyes.size() - 1)
+				//	{
+				//		//rectangle(frame, Point(eyes[j].x, eyes[j].y), Point(eyes[j].x + eyes[j].width, eyes[j].y + eyes[j].height), Scalar(255, 0, 0), 1, 8, 0);
+				//		Mat eye_temp;
 
-						eye_temp = frame(eyes.at(j));
+				//		eye_temp = frame(eyes.at(j));
 
-						eye_temp_hist = getLBPu2Hist(eye_temp, P, R);
-						normalizeHist(eye_temp_hist);
-						eye_temp_hist.colRange(0, size).copyTo(feature_hist.colRange(prevsize, prevsize + size));
+				//		eye_temp_hist = getLBPu2Hist(eye_temp, P, R);
+				//		normalizeHist(eye_temp_hist);
+				//		eye_temp_hist.colRange(0, size).copyTo(feature_hist.colRange(prevsize, prevsize + size));
 
-					}
-				}
+				//	}
+				//}
 
 				for (int i = 0; i < row_blocks; i++)
 				{
@@ -161,9 +154,9 @@ int Box::test()
 						waitKey(0);*/
 						block_temp_hist = getLBPu2Hist(block, P, R);
 						normalizeHist(block_temp_hist);
-						prevsize = prevsize + size + 1;
-						block_temp_hist.colRange(0, size).copyTo(feature_hist.colRange(prevsize, prevsize + size));
 
+						block_temp_hist.colRange(0, size).copyTo(feature_hist.colRange(prevsize, prevsize + size));
+						prevsize = prevsize + size + 1;
 						init_x = init_x + size_of_col_blocks;
 
 					}
@@ -174,18 +167,6 @@ int Box::test()
 				int temp_exp_index;
 				temp_exp_index = prediction(feature_hist);
 				output_expression = names[temp_exp_index];
-
-				time_t rawtime;
-				struct tm * timeinfo;
-				char buffer[80];
-
-				time(&rawtime);
-				timeinfo = localtime(&rawtime);
-
-				strftime(buffer, 80, "%d-%m-%Y %I:%M:%S", timeinfo);
-				std::string str(buffer);
-
-				std::cout << str << "  " << output_expression << endl;
 				/*if (temp_exp_index == g)
 				{
 				score = 1;
@@ -203,7 +184,7 @@ int Box::test()
 				Rect roi = Rect(30, 50, frame.cols, frame.rows);
 				// cv::putText(frame, output_expression, roi.tl(), CV_FONT_HERSHEY_TRIPLEX, 0.7, Scalar(0, 0, 255), 1);
 				//LIVE STREAM
-				cv::putText(frame_stream, output_expression, roi.tl(), CV_FONT_HERSHEY_TRIPLEX, 0.7, Scalar(0, 255, 255), 1);
+				cv::putText(frame_stream, output_expression, roi.tl(), CV_FONT_HERSHEY_TRIPLEX, 0.7, Scalar(0, 0, 255), 1);
 				//
 				/*imshow("image", frame);
 				waitKey(0);*/
@@ -213,11 +194,12 @@ int Box::test()
 			char c = (char)waitKey(33);
 			if (c == 27) break;
 
+
 		}
 		//}
 
 
-		ptr.close();
+		/*ptr.close();*/
 	}
 
 
@@ -234,10 +216,9 @@ int Box::test()
 	}
 	catch (const std::invalid_argument& e)
 	{
-		cout << e.what() << endl;
+		cout << e.what();
 		getchar();
 	}
-	//system("pause");
 	return 0;
 
 }
@@ -249,13 +230,8 @@ int Box::prediction(const cv::Mat &testingData)
 	{
 
 		float p;
-		
 		Ptr<SVM> svm = Algorithm::load<SVM>("SVM_LBP.xml");
-		/*svm->setType(SVM::C_SVC);
-		svm->setKernel(SVM::INTER);
-		svm->setTermCriteria(TermCriteria(TermCriteria::MAX_ITER, 100, 1e-6));*/
 		p = svm->predict(testingData);
-
 		return(p);
 	}
 	catch (Exception& e)
